@@ -1,6 +1,6 @@
+
 import java.sql.*;
 import java.util.Scanner;
-
 
 public class DataBase {
 
@@ -11,7 +11,6 @@ public class DataBase {
 
     private Statement stmt;
     private Connection con;
-
     String name1;
     String surname1;
     int age1;
@@ -85,6 +84,121 @@ public class DataBase {
         }
     }
 
+    public void add() throws SQLException, ClassNotFoundException {
+        try {
+            connectDb();
+
+            rs = stmt.executeQuery(querySelect);
+
+            ps = con.prepareStatement(queryInsert);
+
+            while (rs.next()) {
+                int id = rs.getInt("id_pracownicy");
+
+                if (rs.isLast()) {
+                    ps.setInt(1, id + 1);
+                    ps.setString(2, name1);
+                    ps.setString(3, surname1);
+                    ps.setInt(4, age1);
+                    ps.setString(5, gender1);
+                    ps.executeUpdate();
+                    System.out.println("Pomyślnie dodano użytkownika do bazy danych.");
+                }
+            }
+            ps.close();
+            rs.close();
+            disconnectDb();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void delete(int userID) {
+        try {
+            connectDb();
+            rs = stmt.executeQuery(querySelect);
+
+            while (rs.next()) {
+                int id = rs.getInt("id_pracownicy");
+                if (id == userID) {
+                    ps = con.prepareStatement("Delete FROM PRACOWNICY WHERE id_pracownicy = " + userID + ";");
+                    ps.executeUpdate();
+                }
+            }
+            System.out.println("Usunięto użytkownika z bazy danych.");
+            rs.close();
+            ps.close();
+            disconnectDb();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void select() throws SQLException, ClassNotFoundException {
+        try {
+            connectDb();
+            rs = stmt.executeQuery(querySelect);
+            while (rs.next()) {
+                int id = rs.getInt("id_pracownicy");
+                String name = rs.getString("imie");
+                String surname = rs.getString("nazwisko");
+                int age = rs.getInt("wiek");
+                String gender = rs.getString("plec");
+
+                System.out.printf("ID: %-10d\t Imie: %-10s\t Nazwisko: %-10s\t Wiek: %-10d\t Płeć: %s\n", id, name, surname, age, gender);
+            }
+            System.out.println("Baza danych wyświetlona pomyślnie.");
+            rs.close();
+            disconnectDb();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void update(int userID, String data, int number) {
+        try {
+            connectDb();
+            rs = stmt.executeQuery(querySelect);
+
+            while (rs.next()) {
+                int id = rs.getInt("id_pracownicy");
+                if (id == userID) {
+                    if (number == 1) {
+                        ps = con.prepareStatement("UPDATE PRACOWNICY SET IMIE ='" + data + "' WHERE id_pracownicy = " + userID + ";");
+                        ps.executeUpdate();
+                    } else if (number == 2) {
+                        ps = con.prepareStatement("UPDATE PRACOWNICY SET NAZWISKO ='" + data + "' WHERE id_pracownicy = " + userID + ";");
+                        ps.executeUpdate();
+                    } else if (number == 3) {
+                        ps = con.prepareStatement("UPDATE PRACOWNICY SET WIEK ='" + data + "' WHERE id_pracownicy = " + userID + ";");
+                        ps.executeUpdate();
+                    } else if (number == 4) {
+                        ps = con.prepareStatement("UPDATE PRACOWNICY SET PŁEĆ ='" + data + "' WHERE id_pracownicy = " + userID + ";");
+                        ps.executeUpdate();
+                    }
+                }
+            }
+            System.out.println("Zaktualizowano użytkownika w bazie danych.");
+            rs.close();
+            ps.close();
+            disconnectDb();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
     public void connectDb() throws ClassNotFoundException, SQLException {
         Class.forName(JDBC_DRIVER);
         con = DriverManager.getConnection(URL, LOGIN, PASSWORD);
@@ -96,5 +210,3 @@ public class DataBase {
         stmt.close();
     }
 }
-
-
